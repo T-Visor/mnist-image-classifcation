@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# https://machinelearningmastery.com/how-to-develop-a-convolutional-neural-network-from-scratch-for-mnist-handwritten-digit-classification/
-import os
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 from numpy import mean
 from numpy import std
 from matplotlib import pyplot
@@ -19,9 +16,28 @@ from tensorflow.keras.optimizers import SGD
 
 
 
+def alternate_test_harness():
+    """
+        Create a baseline convolutional neural network for classifying digits in the MNIST dataset.
+    """
+    training_images, training_labels, testing_images, testing_labels = load_MNIST_dataset()
+
+    training_images_normalized, testing_images_normalized = normalize_pixel_values(training_images, testing_images)
+
+    model = create_untrained_model()
+
+    model.fit(training_images_normalized, training_labels, epochs=10, batch_size=32,
+              validation_data=(testing_images_normalized, testing_labels),
+              verbose=1)
+
+    model.save('my_model')
+
+
+
 def run_test_harness():
     """
-        Create and evaluate a baseline convolutional neural network for classifying digits in the MNIST dataset.
+        Create and evaluate a baseline convolutional neural network for classifying digits in the MNIST dataset 
+        using k-fold cross validation.
     """
     training_images, training_labels, testing_images, testing_labels = load_MNIST_dataset()
 
@@ -108,7 +124,11 @@ def evaluate_model(images, labels, n_folds=5):
 
     Args:
         images (uint8 NumPy array): Gray-scale handwritten digit images
+
         labels (uint8 NumPy array): Digit labels corresponding to the images
+
+        n_folds (int): number of groups to split the training set
+                       and number of training iterations
 
     Returns:
         Tuple of lists: (scores, histories)
@@ -211,4 +231,4 @@ def summarize_performance(scores):
 
 
 
-run_test_harness()
+alternate_test_harness()
