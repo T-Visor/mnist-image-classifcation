@@ -128,9 +128,9 @@ def evaluate_model(images, labels, n_folds=5):
         training_images, training_labels = images[training_index], labels[training_index]
         testing_images, testing_labels = images[testing_index], labels[testing_index]
 
-        history = model.fit(training_images, training_labels, epochs=10, batch_size=32, 
-                            validation_data=(testing_images, testing_labels), 
-                            verbose=0)
+        history = model.fit(training_images, training_labels, epochs=10, batch_size=32, \
+                            validation_data=(testing_images, testing_labels), \
+                            verbose=1)
         _, accuracy = model.evaluate(testing_images, testing_labels, verbose=0)
         print('> %.3f' % (accuracy * 100.0))
 
@@ -166,7 +166,7 @@ def create_untrained_model():
     model.add(Dense(10, activation='softmax'))
 
     # Compile the model.
-    my_optimizer = SGD(lr=0.01, momentum=0.9) # SGD => Stochastic Gradient Descent
+    my_optimizer = SGD(learning_rate=0.01, momentum=0.9) # SGD => Stochastic Gradient Descent
     model.compile(optimizer=my_optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
     return model
 
