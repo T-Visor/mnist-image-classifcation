@@ -13,12 +13,19 @@ from keras.layers import Dense
 from keras.layers import Flatten
 from tensorflow.keras.optimizers import SGD
 
+# GLOBALS
+MAX_PIXEL_VALUE = 255.0 # 8-bit color depth in range 0-255
+IMAGE_LENGTH = 28
+IMAGE_WIDTH = 28
+COLOR_CHANNELS = 1      # gray-scale
 
 
 
-def alternate_test_harness():
+
+def train_and_save_model():
     """
-        Create a baseline convolutional neural network for classifying digits in the MNIST dataset.
+        Create and save a convolutional neural network for classifying the MNIST digit
+        dataset.
     """
     training_images, training_labels, testing_images, testing_labels = load_MNIST_dataset()
 
@@ -34,7 +41,8 @@ def alternate_test_harness():
 
 
 
-def run_test_harness():
+
+def evalutate_model_with_kfold_cross_validation():
     """
         Create and evaluate a baseline convolutional neural network for classifying digits in the MNIST dataset 
         using k-fold cross validation.
@@ -77,8 +85,10 @@ def load_MNIST_dataset():
     (training_images, training_labels), (testing_images, testing_labels) = mnist.load_data()
 
     # Reshape the data to have a single color channel, reducing its dimensionality.
-    training_images = training_images.reshape((training_images.shape[0], 28, 28, 1)) 
-    testing_images = testing_images.reshape((testing_images.shape[0], 28, 28, 1))
+    training_images = training_images.reshape((training_images.shape[0],
+                                               IMAGE_LENGTH, IMAGE_WIDTH, COLOR_CHANNELS)) 
+    testing_images = testing_images.reshape((testing_images.shape[0],
+                                             IMAGE_LENGTH, IMAGE_WIDTH, COLOR_CHANNELS))
 
     # Use one-hot encoding for the target values.
     training_labels = to_categorical(training_labels)
@@ -97,7 +107,7 @@ def normalize_pixel_values(training_images, testing_images):
         for training the neural network.    
 
     Args:
-        training_images    (uint8 NumPy array): Training images to normalize
+        training_images (uint8 NumPy array): Training images to normalize
 
         testing_images (uint8 NumPy array): Testing images to normalize
 
@@ -109,8 +119,8 @@ def normalize_pixel_values(training_images, testing_images):
     testing_images_normalized = testing_images.astype('float32')
 
     # Normalize pixel values to range 0-1.
-    training_images_normalized = training_images_normalized / 255.0
-    testing_images_normalized = testing_images_normalized / 255.0
+    training_images_normalized = training_images_normalized / MAX_PIXEL_VALUE
+    testing_images_normalized = testing_images_normalized / MAX_PIXEL_VALUE
 
     return training_images_normalized, testing_images_normalized
 
@@ -179,7 +189,8 @@ def create_untrained_model():
     """
     # Define the model.
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', input_shape=(28, 28, 1)))
+    model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', 
+              input_shape=(IMAGE_LENGTH, IMAGE_WIDTH, COLOR_CHANNELS)))
     model.add(MaxPooling2D((2, 2))) 
     model.add(Flatten())
     model.add(Dense(100, activation='relu', kernel_initializer='he_uniform'))
@@ -231,4 +242,4 @@ def summarize_performance(scores):
 
 
 
-alternate_test_harness()
+train_and_save_model()
