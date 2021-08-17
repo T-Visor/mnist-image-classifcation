@@ -7,4 +7,4 @@ https://machinelearningmastery.com/how-to-develop-a-convolutional-neural-network
 
 Run the 'create-digit-classifier.py' file to create a classification model and save it to disk. Then run the 'make-prediction.py' file to classify a sample image.
 
-![Classification result](classfication-result.png "Classification result")
+![classification-result](https://user-images.githubusercontent.com/25760670/129660012-d76c2d06-b90d-4c4e-8695-9ebe0d4ee3e1.png)
