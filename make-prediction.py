@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 
+import numpy
+import tensorflow
+import os
 from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 from matplotlib import pyplot
 from matplotlib import image
+
+# Suppress tensorflow log messages.
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # GLOBALS
 IMAGE_LENGTH = 28
@@ -22,7 +28,11 @@ def run_example():
     """
     model = load_model('my_model/')
     image_tensor = load_image_as_compatible_array('sample_image.png')
-    prediction = model.predict_classes(image_tensor)
+
+    # Convert prediction result to a human-readable format
+    prediction = model.predict(image_tensor)
+    prediction = tensorflow.math.argmax(prediction, axis=-1).numpy()
+
     display_classification_results('sample_image.png', prediction)
 
 
@@ -39,7 +49,8 @@ def load_image_as_compatible_array(file_name):
     Returns:
         a 3D Numpy array representing the image
     """
-    image = load_img(file_name, grayscale=True, target_size=(IMAGE_LENGTH, IMAGE_WIDTH))
+    image = load_img(file_name, color_mode='grayscale', target_size=(IMAGE_LENGTH, IMAGE_WIDTH))
+
     image = img_to_array(image)
     image = image.reshape(1, IMAGE_LENGTH, IMAGE_WIDTH, COLOR_CHANNELS)
 

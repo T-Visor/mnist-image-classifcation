@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 from numpy import mean
 from numpy import std
 from matplotlib import pyplot
@@ -12,6 +13,10 @@ from keras.layers import MaxPooling2D
 from keras.layers import Dense
 from keras.layers import Flatten
 from tensorflow.keras.optimizers import SGD
+
+# Suppress tensorflow log messages.
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 
 # GLOBALS
 MAX_PIXEL_VALUE = 255.0 # 8-bit color depth in range 0-255
@@ -37,7 +42,7 @@ def train_and_save_model():
               validation_data=(testing_images_normalized, testing_labels),
               verbose=1)
 
-    model.save('my_model')
+    #model.save('my_model')
 
 
 
