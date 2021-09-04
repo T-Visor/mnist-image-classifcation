@@ -17,7 +17,6 @@ from tensorflow.keras.optimizers import SGD
 # Suppress tensorflow log messages.
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-
 # GLOBALS
 MAX_PIXEL_VALUE = 255.0 # 8-bit color depth in range 0-255
 IMAGE_LENGTH = 28

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import numpy
-import tensorflow
 import os
+import tensorflow
 from tensorflow.keras.preprocessing.image import load_img
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
