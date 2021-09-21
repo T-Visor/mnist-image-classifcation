@@ -26,7 +26,7 @@ def run_example():
         Demonstrate the prediction capability of the trained convolutional
         neural network.
     """
-    model = load_model('my_model/')
+    model = load_model('vgg16_model/')
     image_tensor = load_image_as_compatible_array('sample_image.png')
 
     # Convert prediction result to a human-readable format

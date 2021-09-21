@@ -12,16 +12,20 @@ from keras.layers import Conv2D
 from keras.layers import MaxPooling2D
 from keras.layers import Dense
 from keras.layers import Flatten
-from tensorflow.keras.optimizers import SGD
+from keras.layers import Reshape
+from keras.layers import Dropout
+from keras.layers import Activation
+from tensorflow.keras.optimizers import SGD, RMSprop
 
 # Suppress tensorflow log messages.
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # GLOBALS
 MAX_PIXEL_VALUE = 255.0 # 8-bit color depth in range 0-255
-IMAGE_LENGTH = 28
+IMAGE_HEIGHT = 28
 IMAGE_WIDTH = 28
 COLOR_CHANNELS = 1      # gray-scale
+CATEGORIES = 10
 
 
 
@@ -41,7 +45,7 @@ def train_and_save_model():
               validation_data=(testing_images_normalized, testing_labels),
               verbose=1)
 
-    #model.save('my_model')
+    model.save('vgg16_model')
 
 
 
@@ -90,9 +94,9 @@ def load_MNIST_dataset():
 
     # Reshape the data to have a single color channel, reducing its dimensionality.
     training_images = training_images.reshape((training_images.shape[0],
-                                               IMAGE_LENGTH, IMAGE_WIDTH, COLOR_CHANNELS)) 
+                                               IMAGE_HEIGHT, IMAGE_WIDTH, COLOR_CHANNELS)) 
     testing_images = testing_images.reshape((testing_images.shape[0],
-                                             IMAGE_LENGTH, IMAGE_WIDTH, COLOR_CHANNELS))
+                                             IMAGE_HEIGHT, IMAGE_WIDTH, COLOR_CHANNELS))
 
     # Use one-hot encoding for the target values.
     training_labels = to_categorical(training_labels)
@@ -178,31 +182,53 @@ def evaluate_model(images, labels, n_folds=5):
 
 def create_untrained_model():
     """
-        Define a model containing the following:
-        - convolutional layer with a kernel size of 3x3 and 32 filters
-        - pooling layer with dimensions 2x2
-        - flattening layer
-        - dense layer with 100 neurons
-        - output layer with 10 classes for predicting a single digit result in the range 0-9
-
-        Then compile the model using the Stochastic Gradient Descent algorithm with 
-        categorical cross-entropy as the loss function.
-
+        Create an untrained convolutional neural network model.
+        
     Returns:
         The compiled untrained model.
     """
     # Define the model.
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', 
-              input_shape=(IMAGE_LENGTH, IMAGE_WIDTH, COLOR_CHANNELS)))
-    model.add(MaxPooling2D((2, 2))) 
-    model.add(Flatten())
-    model.add(Dense(100, activation='relu', kernel_initializer='he_uniform'))
-    model.add(Dense(10, activation='softmax'))
 
-    # Compile the model.
-    my_optimizer = SGD(learning_rate=0.01, momentum=0.9) # SGD => Stochastic Gradient Descent
-    model.compile(optimizer=my_optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+    model.add(Reshape((IMAGE_HEIGHT, IMAGE_WIDTH, COLOR_CHANNELS)))
+    model.add(Conv2D(64, (3, 3), padding='same', 
+              input_shape=((IMAGE_HEIGHT, IMAGE_WIDTH, COLOR_CHANNELS)),
+              activation='relu'))
+    model.add(Conv2D(64, (3, 3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
+
+    model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+    model.add(Conv2D(128, (3, 3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
+    
+    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
+    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
+    model.add(Conv2D(256, (3, 3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
+    
+    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
+    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
+    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
+    model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
+
+    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
+    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
+    model.add(Conv2D(512, (3, 3), padding='same', activation='relu'))
+    #model.add(MaxPooling2D(data_format="channels_last", pool_size=(2, 2)))
+
+    model.add(Flatten())
+    model.add(Dense(256, activation='relu'))
+    model.add(Dropout(0.5))
+    
+    model.add(Dense(256, activation='relu'))
+    model.add(Dropout(0.5))
+
+    model.add(Dense(CATEGORIES))
+    model.add(Activation('softmax'))
+
+    optimizer = RMSprop(lr=1e-4)
+    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+
     return model
 
 
