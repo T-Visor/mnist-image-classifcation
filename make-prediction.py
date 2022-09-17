@@ -19,9 +19,7 @@ COLOR_CHANNELS = 1      # gray-scale
 MAX_PIXEL_VALUE = 255.0 # 8-bit color depth with range 0-255
 
 
-
-
-def run_example():
+def main():
     """
         Demonstrate the prediction capability of the trained convolutional
         neural network.
@@ -36,8 +34,6 @@ def run_example():
     display_classification_results('sample_image.png', prediction)
 
 
-
-
 def load_image_as_compatible_array(file_name):
     """
         Convert the input image to a 3D array for compatibility with the
@@ -50,16 +46,12 @@ def load_image_as_compatible_array(file_name):
         a 3D Numpy array representing the image
     """
     image = load_img(file_name, color_mode='grayscale', target_size=(IMAGE_LENGTH, IMAGE_WIDTH))
-
     image = img_to_array(image)
     image = image.reshape(1, IMAGE_LENGTH, IMAGE_WIDTH, COLOR_CHANNELS)
-
     image = image.astype('float32')
     image = image / MAX_PIXEL_VALUE
 
     return image
-
-
 
 
 def display_classification_results(file_name, prediction):
@@ -79,6 +71,4 @@ def display_classification_results(file_name, prediction):
     pyplot.show()
 
 
-
-
-run_example()
+main()

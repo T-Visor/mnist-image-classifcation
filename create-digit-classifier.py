@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
+import sys
 from numpy import mean
 from numpy import std
 from matplotlib import pyplot
@@ -18,48 +20,72 @@ from tensorflow.keras.optimizers import SGD
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # GLOBALS
+COLOR_CHANNELS = 1      # gray-scale
 MAX_PIXEL_VALUE = 255.0 # 8-bit color depth in range 0-255
 IMAGE_LENGTH = 28
 IMAGE_WIDTH = 28
-COLOR_CHANNELS = 1      # gray-scale
 
 
-
-
-def train_and_save_model():
+def main():
     """
-        Create and save a convolutional neural network for classifying the MNIST digit
-        dataset.
+        Create and save a convolutional neural network for classifying the
+        MNIST hand-written digits dataset.
     """
-    training_images, training_labels, testing_images, testing_labels = load_MNIST_dataset()
+    # Get k-value from command-line argument
+    arguments = parse_command_line_arguments()
+    k_value = arguments.k_value[0]
 
-    training_images_normalized, testing_images_normalized = normalize_pixel_values(training_images, testing_images)
+    print('============================================')
+    print('Training model with {} fold cross validation'.format(k_value))
+    print('============================================')
 
-    model = create_untrained_model()
-
-    model.fit(training_images_normalized, training_labels, epochs=10, batch_size=32,
-              validation_data=(testing_images_normalized, testing_labels),
-              verbose=1)
-
-    #model.save('my_model')
-
+    trained_model = train_model_with_kfold_cross_validation(k_value)
+    trained_model.save('my_model')
 
 
+def parse_command_line_arguments():
+    """
+        Parse the arguments from the command-line.
+        If no arguments are passed, the help screen will
+        be shown and the program will be terminated.
 
-def evalutate_model_with_kfold_cross_validation():
+    Returns:
+        (argparse.ArgumentParser): the parser with command-line arguments
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-k', '--k_value', type=int, choices={2, 3, 4, 5}, nargs=1, required=True,
+                        help='Determines k-value for k-fold cross validation.')
+
+    # if no arguments were passed, show the help screen
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit()
+
+    return parser.parse_args()
+
+
+def train_model_with_kfold_cross_validation(k_value=2):
     """
         Create and evaluate a baseline convolutional neural network for classifying digits in the MNIST dataset 
         using k-fold cross validation.
-    """
-    training_images, training_labels, testing_images, testing_labels = load_MNIST_dataset()
 
+    Args:
+        k_value (int): specified 'k-value' for k-fold cross validation
+
+    Returns:
+        model (tf.keras.Model): the trained model
+    """
+    # Load and normalize training data.
+    training_images, training_labels, testing_images, testing_labels = load_MNIST_dataset()
     training_images_normalized, _ = normalize_pixel_values(training_images, testing_images)
 
-    scores, histories = evaluate_model(training_images_normalized, training_labels)
+    # Train the model.
+    model, scores, histories = train_model(training_images_normalized, training_labels, k_value)
     summarize_loss_and_accuracy(histories)
     summarize_performance(scores)
 
-
+    return model
 
 
 def load_MNIST_dataset():
@@ -101,8 +127,6 @@ def load_MNIST_dataset():
     return training_images, training_labels, testing_images, testing_labels
 
 
-
-
 def normalize_pixel_values(training_images, testing_images):
     """
         Scale down the pixel values for the image data. 
@@ -129,9 +153,7 @@ def normalize_pixel_values(training_images, testing_images):
     return training_images_normalized, testing_images_normalized
 
 
-
-
-def evaluate_model(images, labels, n_folds=5):
+def train_model(images, labels, n_folds=5):
     """
         Train the model and assess its performance using
         k-fold cross validation.
@@ -145,7 +167,7 @@ def evaluate_model(images, labels, n_folds=5):
                        and number of training iterations
 
     Returns:
-        Tuple of lists: (scores, histories)
+        model (tf.keras.Model): the trained CNN model
 
         scores (list): model accuracy scores at different training iterations
 
@@ -171,9 +193,7 @@ def evaluate_model(images, labels, n_folds=5):
         scores.append(accuracy)
         histories.append(history)
 
-    return scores, histories
-
-
+    return model, scores, histories
 
 
 def create_untrained_model():
@@ -206,8 +226,6 @@ def create_untrained_model():
     return model
 
 
-
-
 def summarize_loss_and_accuracy(histories):
     """
         Display two subplots showing the loss and accuracy values of the trained model.
@@ -229,8 +247,6 @@ def summarize_loss_and_accuracy(histories):
     pyplot.show()
 
 
-
-
 def summarize_performance(scores):
     """
         Display the average, standard deviation, and occurrences of model accuracy from training
@@ -244,6 +260,4 @@ def summarize_performance(scores):
     pyplot.show()
 
 
-
-
-train_and_save_model()
+main()
