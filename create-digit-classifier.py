@@ -214,11 +214,11 @@ def create_untrained_model():
     # Define the model.
     model = Sequential()
     model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', 
-              input_shape=(IMAGE_LENGTH, IMAGE_WIDTH, COLOR_CHANNELS)))
-    model.add(MaxPooling2D((2, 2))) 
-    model.add(Flatten())
+              input_shape=(IMAGE_LENGTH, IMAGE_WIDTH, COLOR_CHANNELS))) # Extract image features.
+    model.add(MaxPooling2D((2, 2))) # Downsample the extracted features (this layer always follows Conv2D).
+    model.add(Flatten())            # Convert the 2D matrix to a 1xN vector to prepare it for the dense layers.
     model.add(Dense(100, activation='relu', kernel_initializer='he_uniform'))
-    model.add(Dense(10, activation='softmax'))
+    model.add(Dense(10, activation='softmax')) # This layer uses '10' because there are 10 classes for prediction.
 
     # Compile the model.
     my_optimizer = SGD(learning_rate=0.01, momentum=0.9) # SGD => Stochastic Gradient Descent
